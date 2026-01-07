@@ -90,6 +90,7 @@ class Fraction {
 // DOM Elements
 const measurementsContainer = document.getElementById('measurementsContainer');
 const runningTotal = document.getElementById('runningTotal');
+const runningTotalInches = document.getElementById('runningTotalInches');
 const addMeasurementBtn = document.getElementById('addMeasurementBtn');
 const clearBtn = document.getElementById('clearBtn');
 const fractionButtons = document.querySelectorAll('.fraction-btn');
@@ -279,6 +280,45 @@ function fractionToFeetInchesString(fraction) {
     return resultString;
 }
 
+// Convert fraction to inches-only format string (no feet conversion)
+function fractionToInchesOnlyString(fraction) {
+    const isNegative = fraction.numerator < 0;
+    const absNumerator = Math.abs(fraction.numerator);
+    const denominator = fraction.denominator;
+    
+    // Convert to inches and fraction
+    const wholeInches = Math.floor(absNumerator / denominator);
+    const remainingNumerator = absNumerator % denominator;
+    
+    let resultString = '';
+    
+    if (wholeInches > 0) {
+        resultString = `${wholeInches}`;
+    }
+    
+    if (remainingNumerator > 0) {
+        const remainingFraction = new Fraction(remainingNumerator, denominator);
+        remainingFraction.simplify();
+        if (wholeInches > 0) {
+            resultString += ` ${remainingFraction.numerator}/${remainingFraction.denominator}`;
+        } else {
+            resultString = `${remainingFraction.numerator}/${remainingFraction.denominator}`;
+        }
+    }
+    
+    if (!resultString) {
+        resultString = '0';
+    }
+    
+    resultString += '"';
+    
+    if (isNegative && resultString !== '0"') {
+        resultString = '-' + resultString;
+    }
+    
+    return resultString;
+}
+
 // Calculate running total
 function calculateRunningTotal() {
     let total = new Fraction(0, 1);
@@ -307,7 +347,13 @@ function calculateRunningTotal() {
 function updateRunningTotal() {
     const total = calculateRunningTotal();
     const resultString = fractionToFeetInchesString(total);
+    const inchesOnlyString = fractionToInchesOnlyString(total);
+    
+    // Update both displays
     runningTotal.textContent = resultString;
+    if (runningTotalInches) {
+        runningTotalInches.textContent = inchesOnlyString;
+    }
     
     // Update result display
     const decimal = total.toDecimal();
@@ -315,8 +361,8 @@ function updateRunningTotal() {
     
     if (measurements.length > 0) {
         resultDisplay.innerHTML = `
-            <div style="font-size: 20px; margin-bottom: 4px; font-weight: 700;">${resultString}</div>
-            <div style="font-size: 13px; opacity: 0.9;">${fractionString} = ${decimal.toFixed(4)}"</div>
+            <div style="font-size: 18px; margin-bottom: 4px; font-weight: 700;">${resultString} | ${inchesOnlyString}</div>
+            <div style="font-size: 12px; opacity: 0.9;">${fractionString} = ${decimal.toFixed(4)}"</div>
         `;
         resultDisplay.classList.add('has-result');
     } else {
@@ -703,6 +749,7 @@ window.clearAll = function() {
     
     // 3. Clear the display
     if (runningTotal) runningTotal.textContent = '0"';
+    if (runningTotalInches) runningTotalInches.textContent = '0"';
     if (resultDisplay) {
         resultDisplay.textContent = '';
         resultDisplay.classList.remove('has-result');

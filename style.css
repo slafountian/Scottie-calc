@@ -173,12 +173,36 @@ body {
     margin-bottom: 6px;
 }
 
+.total-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.total-item {
+    flex: 1;
+    text-align: center;
+    background: #222;
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid #333;
+}
+
+.total-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
 .result {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
     color: #4a9eff;
     text-align: center;
-    min-height: 35px;
+    min-height: 28px;
     text-shadow: 0 0 10px rgba(74, 158, 255, 0.3);
 }
 
