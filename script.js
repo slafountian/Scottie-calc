@@ -94,6 +94,11 @@ const addMeasurementBtn = document.getElementById('addMeasurementBtn');
 const clearBtn = document.getElementById('clearBtn');
 const fractionButtons = document.querySelectorAll('.fraction-btn');
 const resultDisplay = document.getElementById('resultDisplay');
+// Keypad elements
+let keypadContainer = null;
+let keypadGrid = null;
+let keypadLabel = null;
+let currentKeypadInput = null;
 // historySelect will be initialized in DOMContentLoaded
 
 // State
@@ -230,11 +235,11 @@ function populateMeasurementFromHistory(historyString) {
         // Update running total
         updateRunningTotalWithHistory();
         
-        // Focus on the populated measurement
+        // Focus on the populated measurement and scroll to show last 2
         setTimeout(() => {
             if (targetMeasurement.feetInput) {
+                scrollToLastMeasurements();
                 targetMeasurement.feetInput.focus();
-                targetMeasurement.element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }, 50);
     }
@@ -278,10 +283,10 @@ function calculateRunningTotal() {
     let total = new Fraction(0, 1);
     
     measurements.forEach(measurement => {
-        const feet = parseInt(measurement.feetInput.value) || 0;
-        const inches = parseInt(measurement.inchesInput.value) || 0;
-        const num = parseInt(measurement.numInput.value) || 0;
-        const den = parseInt(measurement.denInput.value) || 1;
+        const feet = parseFloat(measurement.feetInput.value) || 0;
+        const inches = parseFloat(measurement.inchesInput.value) || 0;
+        const num = parseFloat(measurement.numInput.value) || 0;
+        const den = parseFloat(measurement.denInput.value) || 1;
         
         if (den === 0) return;
         
@@ -438,11 +443,12 @@ function createMeasurementElement(index) {
     
     // Feet input
     const feetInput = document.createElement('input');
-    feetInput.type = 'number';
+    feetInput.type = 'text';
+    feetInput.inputMode = 'none'; // Prevent native keyboard
     feetInput.id = `feet${index}`;
     feetInput.className = 'feet-input';
     feetInput.placeholder = '0';
-    feetInput.min = '0';
+    feetInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     
     const feetLabel = document.createElement('span');
     feetLabel.className = 'feet-label';
@@ -450,11 +456,12 @@ function createMeasurementElement(index) {
     
     // Inches input
     const inchesInput = document.createElement('input');
-    inchesInput.type = 'number';
+    inchesInput.type = 'text';
+    inchesInput.inputMode = 'none'; // Prevent native keyboard
     inchesInput.id = `inches${index}`;
     inchesInput.className = 'inches-input';
     inchesInput.placeholder = '0';
-    inchesInput.min = '0';
+    inchesInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     
     const inchesLabel = document.createElement('span');
     inchesLabel.className = 'inches-label';
@@ -465,21 +472,23 @@ function createMeasurementElement(index) {
     fractionDiv.className = 'fraction-entry';
     
     const numInput = document.createElement('input');
-    numInput.type = 'number';
+    numInput.type = 'text';
+    numInput.inputMode = 'none'; // Prevent native keyboard
     numInput.id = `num${index}`;
     numInput.placeholder = '0';
-    numInput.min = '0';
+    numInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     
     const fractionLine = document.createElement('span');
     fractionLine.className = 'fraction-line';
     fractionLine.textContent = '/';
     
     const denInput = document.createElement('input');
-    denInput.type = 'number';
+    denInput.type = 'text';
+    denInput.inputMode = 'none'; // Prevent native keyboard
     denInput.id = `den${index}`;
     denInput.placeholder = '1';
-    denInput.min = '1';
     denInput.value = '1';
+    denInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     
     fractionDiv.appendChild(numInput);
     fractionDiv.appendChild(fractionLine);
@@ -528,23 +537,33 @@ function createMeasurementElement(index) {
         input.addEventListener('focus', () => {
             selectedMeasurementIndex = index;
             
-            // Scroll input into view when keyboard appears (with delay to account for keyboard animation)
+            // Show custom keypad instead of native keyboard
+            showKeypad(input, measurement);
+            
+            // Scroll to show this measurement while keeping keypad/fractions visible
             setTimeout(() => {
-                input.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center',
-                    inline: 'nearest'
-                });
-                
-                // Also scroll the parent measurement element to ensure fraction fields are visible
-                if (measurement.element) {
+                // If this is one of the last 2 measurements, just scroll it into view
+                const isLastTwo = index >= measurements.length - 2;
+                if (isLastTwo) {
                     measurement.element.scrollIntoView({ 
                         behavior: 'smooth', 
-                        block: 'center',
+                        block: 'nearest',
                         inline: 'nearest'
                     });
+                } else {
+                    // For older measurements, scroll to show last 2 instead
+                    scrollToLastMeasurements();
                 }
-            }, 300); // Delay to allow keyboard to appear first
+            }, 100);
+        });
+        
+        input.addEventListener('blur', () => {
+            // Reset keypad when input loses focus (with small delay to allow button clicks)
+            setTimeout(() => {
+                if (currentKeypadInput === input) {
+                    hideKeypad();
+                }
+            }, 200);
         });
     });
     
@@ -565,13 +584,13 @@ function addMeasurement() {
     updateAddButtonState();
     updateRunningTotalWithHistory();
     
-    // Focus on the first input (feet) of the newly added measurement and scroll into view
+    // Focus on the first input (feet) of the newly added measurement and scroll to show last 2
     setTimeout(() => {
         if (measurements[index] && measurements[index].feetInput) {
+            // Scroll measurements container to show the last 2 measurements
+            scrollToLastMeasurements();
             measurements[index].feetInput.focus();
             selectedMeasurementIndex = index;
-            // Scroll the new measurement into view
-            measurements[index].element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }, 50);
 }
@@ -711,12 +730,129 @@ window.clearHistory = function() {
     console.log('History cleared from localStorage');
 };
 
+// Scroll measurements container to show last 2 measurements
+function scrollToLastMeasurements() {
+    if (measurements.length === 0) return;
+    
+    const container = measurementsContainer;
+    if (!container) return;
+    
+    // Get the last 2 measurements
+    const lastIndex = measurements.length - 1;
+    const secondLastIndex = Math.max(0, measurements.length - 2);
+    
+    if (measurements[lastIndex] && measurements[lastIndex].element) {
+        // Scroll to show the last measurement at the bottom of visible area
+        setTimeout(() => {
+            measurements[lastIndex].element.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'end',
+                inline: 'nearest'
+            });
+        }, 10);
+    }
+}
+
+// Custom Keypad Functions
+function initKeypad() {
+    keypadContainer = document.getElementById('keypadContainer');
+    keypadGrid = document.getElementById('keypadGrid');
+    keypadLabel = document.getElementById('keypadLabel');
+    
+    if (!keypadContainer || !keypadGrid) return;
+    
+    // Create keypad buttons
+    const buttons = [
+        { value: '1', class: 'number' },
+        { value: '2', class: 'number' },
+        { value: '3', class: 'number' },
+        { value: '4', class: 'number' },
+        { value: '5', class: 'number' },
+        { value: '6', class: 'number' },
+        { value: '7', class: 'number' },
+        { value: '8', class: 'number' },
+        { value: '9', class: 'number' },
+        { value: '0', class: 'number zero' },
+        { value: '.', class: 'decimal' },
+        { value: '←', class: 'backspace' }
+    ];
+    
+    buttons.forEach(btn => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `keypad-btn ${btn.class}`;
+        button.textContent = btn.value;
+        button.addEventListener('click', () => handleKeypadInput(btn.value));
+        keypadGrid.appendChild(button);
+    });
+}
+
+function showKeypad(input, measurement) {
+    if (!keypadContainer) return;
+    
+    currentKeypadInput = input;
+    
+    // Determine keypad type based on input
+    let label = 'Tap a field to enter';
+    let keypadType = '';
+    
+    if (input === measurement.feetInput) {
+        label = 'Feet';
+        keypadType = 'feet-active';
+    } else if (input === measurement.inchesInput) {
+        label = 'Inches';
+        keypadType = 'inches-active';
+    } else if (input === measurement.numInput || input === measurement.denInput) {
+        label = 'Fraction';
+        keypadType = 'fraction-active';
+    }
+    
+    keypadLabel.textContent = label;
+    keypadContainer.className = `keypad-container-static ${keypadType}`;
+}
+
+function hideKeypad() {
+    if (!keypadContainer) return;
+    
+    keypadContainer.className = 'keypad-container-static';
+    keypadLabel.textContent = 'Tap a field to enter';
+    currentKeypadInput = null;
+}
+
+function handleKeypadInput(value) {
+    if (!currentKeypadInput) return;
+    
+    const currentValue = currentKeypadInput.value || '';
+    
+    if (value === '←') {
+        // Backspace
+        currentKeypadInput.value = currentValue.slice(0, -1);
+    } else if (value === '.') {
+        // Decimal point (only if not already present)
+        if (!currentValue.includes('.')) {
+            currentKeypadInput.value = currentValue + '.';
+        }
+    } else {
+        // Number
+        // For fraction denominator, don't allow 0
+        if (currentKeypadInput.id && currentKeypadInput.id.startsWith('den') && currentValue === '0' && value === '0') {
+            return; // Don't allow 00
+        }
+        currentKeypadInput.value = currentValue + value;
+    }
+    
+    // Trigger input event to update calculations
+    currentKeypadInput.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 // Initialize
 addMeasurement(); // Add first measurement
 updateRunningTotalWithHistory();
 
 // Setup clear button handler and history select (fallback in case inline onclick doesn't work)
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize keypad
+    initKeypad();
     // Initialize history select
     historySelect = document.getElementById('historySelect');
     if (historySelect) {

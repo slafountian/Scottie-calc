@@ -54,17 +54,14 @@ body {
 
 .calculator {
     padding: 10px;
-    padding-bottom: 200px; /* Extra padding at bottom to allow scrolling when keyboard is open */
+    padding-bottom: 10px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    overflow-y: auto;
-    overflow-x: hidden;
+    gap: 6px;
+    overflow: hidden; /* Don't scroll calculator, only measurements container */
     flex: 1;
     min-height: 0;
     background: #2a2a2a;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
 }
 
 .history-section {
@@ -188,8 +185,15 @@ body {
 .measurements-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
     margin-bottom: 4px;
+    max-height: 200px; /* Limit height - only show ~2 measurements */
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    flex-shrink: 1;
+    min-height: 0;
 }
 
 .measurement-item {
@@ -638,6 +642,120 @@ body {
     input[type="number"] {
         font-size: 16px !important;
     }
+}
+
+/* Custom Keypad Styles - Static on screen */
+.keypad-container-static {
+    background: #1a1a1a;
+    border-radius: 6px;
+    padding: 4px !important;
+    margin: 2px 0 !important;
+    border: 1.5px solid #444;
+}
+
+.keypad-header-static {
+    margin-bottom: 2px !important;
+    padding-bottom: 2px !important;
+    border-bottom: 1px solid #444;
+    text-align: center;
+}
+
+.keypad-label-static {
+    font-size: 9px !important;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+.keypad-grid-static {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px !important;
+    max-width: 100%;
+}
+
+.keypad-btn {
+    border: 1.5px solid;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: white;
+    min-height: 28px;
+    max-height: 32px;
+    padding: 2px 4px;
+}
+
+.keypad-btn.number {
+    background: #4a90e2;
+    border-color: #357abd;
+}
+
+.keypad-btn.number:active {
+    background: #5ba0f2;
+    transform: scale(0.95);
+}
+
+.keypad-btn.decimal {
+    background: #51cf66;
+    border-color: #40c057;
+}
+
+.keypad-btn.decimal:active {
+    background: #61df76;
+    transform: scale(0.95);
+}
+
+.keypad-btn.backspace {
+    background: #dc3545;
+    border-color: #c82333;
+    font-size: 20px;
+}
+
+.keypad-btn.backspace:active {
+    background: #c82333;
+    transform: scale(0.95);
+}
+
+.keypad-btn.zero {
+    grid-column: span 2;
+    min-height: 32px;
+}
+
+/* Keypad button sizing for static keypad - much smaller */
+.keypad-container-static .keypad-btn {
+    font-size: 14px !important;
+    min-height: 28px !important;
+    max-height: 32px !important;
+    padding: 2px 4px !important;
+    border-width: 1.5px !important;
+}
+
+.keypad-container-static .keypad-btn.backspace {
+    font-size: 12px !important;
+}
+
+/* Dynamic keypad colors based on active input */
+.keypad-container-static.feet-active .keypad-btn.number {
+    background: #4a90e2;
+    border-color: #357abd;
+}
+
+.keypad-container-static.inches-active .keypad-btn.number {
+    background: #51cf66;
+    border-color: #40c057;
+}
+
+.keypad-container-static.fraction-active .keypad-btn.number {
+    background: #1a1a1a;
+    border-color: #555;
 }
 
 /* Ensure no scrolling on small screens */
