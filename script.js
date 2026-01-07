@@ -232,8 +232,8 @@ function populateMeasurementFromHistory(historyString) {
             targetMeasurement.opBtn.className = 'measurement-op-btn add';
         }
         
-        // Update running total
-        updateRunningTotalWithHistory();
+        // Update running total (don't save to history when populating from history)
+        updateRunningTotal();
         
         // Focus on the populated measurement and scroll to show last 2
         setTimeout(() => {
@@ -444,11 +444,10 @@ function createMeasurementElement(index) {
     // Feet input
     const feetInput = document.createElement('input');
     feetInput.type = 'text';
-    feetInput.inputMode = 'none'; // Prevent native keyboard
+    feetInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     feetInput.id = `feet${index}`;
     feetInput.className = 'feet-input';
     feetInput.placeholder = '0';
-    feetInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     
     const feetLabel = document.createElement('span');
     feetLabel.className = 'feet-label';
@@ -457,11 +456,10 @@ function createMeasurementElement(index) {
     // Inches input
     const inchesInput = document.createElement('input');
     inchesInput.type = 'text';
-    inchesInput.inputMode = 'none'; // Prevent native keyboard
+    inchesInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     inchesInput.id = `inches${index}`;
     inchesInput.className = 'inches-input';
     inchesInput.placeholder = '0';
-    inchesInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     
     const inchesLabel = document.createElement('span');
     inchesLabel.className = 'inches-label';
@@ -473,10 +471,9 @@ function createMeasurementElement(index) {
     
     const numInput = document.createElement('input');
     numInput.type = 'text';
-    numInput.inputMode = 'none'; // Prevent native keyboard
+    numInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     numInput.id = `num${index}`;
     numInput.placeholder = '0';
-    numInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     
     const fractionLine = document.createElement('span');
     fractionLine.className = 'fraction-line';
@@ -484,11 +481,10 @@ function createMeasurementElement(index) {
     
     const denInput = document.createElement('input');
     denInput.type = 'text';
-    denInput.inputMode = 'none'; // Prevent native keyboard
+    denInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     denInput.id = `den${index}`;
     denInput.placeholder = '1';
     denInput.value = '1';
-    denInput.readOnly = true; // Prevent native keyboard, we'll use custom keypad
     
     fractionDiv.appendChild(numInput);
     fractionDiv.appendChild(fractionLine);
@@ -532,7 +528,7 @@ function createMeasurementElement(index) {
     [feetInput, inchesInput, numInput, denInput].forEach(input => {
         input.addEventListener('input', () => {
             selectedMeasurementIndex = index;
-            updateRunningTotalWithHistory();
+            updateRunningTotal(); // Update display but don't save to history on every keypress
         });
         input.addEventListener('focus', () => {
             selectedMeasurementIndex = index;
@@ -559,11 +555,13 @@ function createMeasurementElement(index) {
         
         input.addEventListener('blur', () => {
             // Reset keypad when input loses focus (with small delay to allow button clicks)
+            // Use a longer delay to allow keypad button clicks to complete
             setTimeout(() => {
-                if (currentKeypadInput === input) {
+                // Only hide if the input is still the current one and we're not clicking a keypad button
+                if (currentKeypadInput === input && document.activeElement !== input) {
                     hideKeypad();
                 }
-            }, 200);
+            }, 300);
         });
     });
     
@@ -662,7 +660,7 @@ fractionButtons.forEach(btn => {
             measurement.numInput.value = num;
             measurement.denInput.value = den;
             measurement.numInput.focus();
-            updateRunningTotalWithHistory();
+            updateRunningTotal(); // Update display but don't save to history on fraction button click
         } else if (measurements.length > 0) {
             // Use last measurement if none selected
             const measurement = measurements[measurements.length - 1];
@@ -670,7 +668,7 @@ fractionButtons.forEach(btn => {
             measurement.denInput.value = den;
             measurement.numInput.focus();
             selectedMeasurementIndex = measurements.length - 1;
-            updateRunningTotalWithHistory();
+            updateRunningTotal(); // Update display but don't save to history on fraction button click
         }
     });
 });
@@ -782,7 +780,11 @@ function initKeypad() {
         button.type = 'button';
         button.className = `keypad-btn ${btn.class}`;
         button.textContent = btn.value;
-        button.addEventListener('click', () => handleKeypadInput(btn.value));
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleKeypadInput(btn.value);
+        });
         keypadGrid.appendChild(button);
     });
 }
@@ -823,6 +825,7 @@ function handleKeypadInput(value) {
     if (!currentKeypadInput) return;
     
     const currentValue = currentKeypadInput.value || '';
+    const inputId = currentKeypadInput.id || '';
     
     if (value === '←') {
         // Backspace
@@ -833,16 +836,44 @@ function handleKeypadInput(value) {
             currentKeypadInput.value = currentValue + '.';
         }
     } else {
-        // Number
+        // Number input
+        // Check max digits for feet input (3 digits max)
+        if (inputId.startsWith('feet')) {
+            const digitsOnly = currentValue.replace(/[^0-9]/g, '');
+            if (digitsOnly.length >= 3) {
+                return; // Don't add more digits, feet is limited to 3
+            }
+        }
+        
+        // Check max digits for inches input (2 digits max)
+        if (inputId.startsWith('inches')) {
+            const digitsOnly = currentValue.replace(/[^0-9]/g, '');
+            if (digitsOnly.length >= 2) {
+                return; // Don't add more digits, inches is limited to 2
+            }
+        }
+        
         // For fraction denominator, don't allow 0
-        if (currentKeypadInput.id && currentKeypadInput.id.startsWith('den') && currentValue === '0' && value === '0') {
+        if (inputId.startsWith('den') && currentValue === '0' && value === '0') {
             return; // Don't allow 00
         }
+        
+        // Add the number
         currentKeypadInput.value = currentValue + value;
     }
     
     // Trigger input event to update calculations
     currentKeypadInput.dispatchEvent(new Event('input', { bubbles: true }));
+    
+    // Keep focus on the input to allow multiple digits
+    if (currentKeypadInput) {
+        // Use setTimeout to ensure focus happens after the click event completes
+        setTimeout(() => {
+            if (currentKeypadInput) {
+                currentKeypadInput.focus();
+            }
+        }, 10);
+    }
 }
 
 // Initialize
