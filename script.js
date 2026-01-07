@@ -99,6 +99,7 @@ let keypadContainer = null;
 let keypadGrid = null;
 let keypadLabel = null;
 let currentKeypadInput = null;
+let isKeypadInteracting = false;
 // historySelect will be initialized in DOMContentLoaded
 
 // State
@@ -557,8 +558,18 @@ function createMeasurementElement(index) {
             // Reset keypad when input loses focus (with small delay to allow button clicks)
             // Use a longer delay to allow keypad button clicks to complete
             setTimeout(() => {
-                // Only hide if the input is still the current one and we're not clicking a keypad button
-                if (currentKeypadInput === input && document.activeElement !== input) {
+                // If focus moved into the keypad, keep the current input active.
+                // This is critical for web browsers where clicking a button steals focus.
+                const activeEl = document.activeElement;
+                const focusIsInKeypad = keypadContainer && activeEl && keypadContainer.contains(activeEl);
+                if (currentKeypadInput === input && (isKeypadInteracting || focusIsInKeypad)) {
+                    // Re-focus the input so multi-digit entry works without re-tapping the field
+                    input.focus();
+                    return;
+                }
+
+                // Only hide if the input is still the current one and focus is truly elsewhere
+                if (currentKeypadInput === input && activeEl !== input) {
                     hideKeypad();
                 }
             }, 300);
@@ -780,10 +791,19 @@ function initKeypad() {
         button.type = 'button';
         button.className = `keypad-btn ${btn.class}`;
         button.textContent = btn.value;
+        // Prevent the keypad button from stealing focus from the active input
+        button.tabIndex = -1;
+        button.addEventListener('pointerdown', (e) => {
+            isKeypadInteracting = true;
+            e.preventDefault();
+            e.stopPropagation();
+        });
         button.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             handleKeypadInput(btn.value);
+            // Reset after the click completes
+            setTimeout(() => { isKeypadInteracting = false; }, 0);
         });
         keypadGrid.appendChild(button);
     });
