@@ -1,0 +1,692 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+    position: fixed;
+    width: 100%;
+}
+
+.container {
+    width: 100%;
+    max-width: 100%;
+    background: #2a2a2a;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-height: 100vh;
+}
+
+.app-header {
+    background: #333;
+    padding: 10px 16px;
+    text-align: center;
+    flex-shrink: 0;
+    width: 100%;
+    display: block;
+    position: relative;
+    z-index: 100;
+    border-bottom: 2px solid #444;
+}
+
+.app-header h1 {
+    margin: 0;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+.calculator {
+    padding: 10px;
+    padding-bottom: 200px; /* Extra padding at bottom to allow scrolling when keyboard is open */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    background: #2a2a2a;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.history-section {
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.history-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #888;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.history-controls {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.history-select {
+    flex: 1;
+    padding: 12px 40px 12px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    border: 2px solid #444;
+    border-radius: 8px;
+    background: #1a1a1a;
+    color: #fff;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%234a9eff' d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.history-select:hover {
+    border-color: #4a9eff;
+    background-color: #222;
+}
+
+.history-select:focus {
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.3), 0 2px 8px rgba(0, 0, 0, 0.4);
+    background-color: #222;
+}
+
+.history-select option {
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 15px;
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    min-height: 44px;
+}
+
+.history-select option:hover {
+    background: #4a9eff;
+    color: white;
+}
+
+.history-select option:checked {
+    background: #4a9eff;
+    color: white;
+    font-weight: 700;
+}
+
+.display {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 12px;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin-bottom: 6px;
+    border: 2px solid #444;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.current-input {
+    font-size: 18px;
+    color: #666;
+    text-align: center;
+    margin-bottom: 6px;
+    word-wrap: break-word;
+    min-height: 24px;
+}
+
+.running-total-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #aaa;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.result {
+    font-size: 28px;
+    font-weight: 700;
+    color: #4a9eff;
+    text-align: center;
+    min-height: 35px;
+    text-shadow: 0 0 10px rgba(74, 158, 255, 0.3);
+}
+
+.measurements-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.measurement-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    background: #333;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #555;
+    margin-bottom: 6px;
+}
+
+.measurement-op-btn {
+    flex-shrink: 0;
+    width: 45px;
+    height: 45px;
+    padding: 0;
+    font-size: 22px;
+    font-weight: 700;
+    border: 2px solid #ff8c00;
+    border-radius: 8px;
+    background: #ff8c00;
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.measurement-op-btn.subtract {
+    background: #ff6b6b;
+    border-color: #ff6b6b;
+    color: white;
+}
+
+.measurement-op-btn.add {
+    background: #51cf66;
+    border-color: #51cf66;
+    color: white;
+}
+
+.measurement-op-btn:active {
+    transform: scale(0.95);
+}
+
+.measurement-inputs {
+    flex: 1;
+    min-width: 0;
+}
+
+.measurement-remove-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 20px;
+    font-weight: 700;
+    border: 2px solid #dc3545;
+    border-radius: 6px;
+    background: #dc3545;
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.measurement-remove-btn:active {
+    background: #c82333;
+    border-color: #c82333;
+    transform: scale(0.95);
+}
+
+.add-measurement-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+}
+
+.add-measurement-btn:active {
+    transform: scale(0.96);
+}
+
+.fraction-input {
+    margin: 0;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.input-group {
+    margin: 0;
+}
+
+.input-group.compact label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.feet-inches-fraction-entry {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #1a1a1a;
+    padding: 8px;
+    border-radius: 6px;
+    border: 2px solid #555;
+    transition: all 0.2s;
+    flex-wrap: wrap;
+}
+
+.feet-inches-fraction-entry:focus-within {
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2);
+}
+
+.feet-input {
+    width: 45px;
+    border: none;
+    background: #4a90e2;
+    font-size: 18px;
+    text-align: center;
+    padding: 8px 4px;
+    outline: none;
+    font-weight: 700;
+    color: white;
+    border-radius: 6px;
+    border: 2px solid #357abd;
+}
+
+.feet-input:focus {
+    border-color: #5ba0f2;
+    background: #5ba0f2;
+    box-shadow: 0 0 8px rgba(74, 144, 226, 0.5);
+}
+
+.feet-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+}
+
+.feet-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #4a90e2;
+    padding: 0 2px;
+    min-width: 14px;
+}
+
+.inches-input {
+    width: 45px;
+    border: none;
+    background: #51cf66;
+    font-size: 18px;
+    text-align: center;
+    padding: 8px 4px;
+    outline: none;
+    font-weight: 700;
+    color: white;
+    border-radius: 6px;
+    border: 2px solid #40c057;
+}
+
+.inches-input:focus {
+    border-color: #61df76;
+    background: #61df76;
+    box-shadow: 0 0 8px rgba(81, 207, 102, 0.5);
+}
+
+.inches-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+}
+
+.inches-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #51cf66;
+    padding: 0 2px;
+    min-width: 14px;
+}
+
+.fraction-entry {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #1a1a1a;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    flex: 1;
+    min-width: 80px;
+}
+
+.fraction-entry input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    text-align: center;
+    padding: 4px 3px;
+    outline: none;
+    font-weight: 600;
+    color: #fff;
+    min-width: 30px;
+    max-width: 40px;
+}
+
+.fraction-entry input::placeholder {
+    color: #888;
+    font-size: 11px;
+}
+
+.fraction-line {
+    font-size: 16px;
+    font-weight: 700;
+    color: #aaa;
+    padding: 0 2px;
+}
+
+.operations {
+    display: flex;
+    gap: 8px;
+    margin: 0;
+}
+
+.op-btn {
+    flex: 1;
+    padding: 12px;
+    font-size: 24px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+}
+
+.op-btn:active {
+    transform: scale(0.96);
+}
+
+.op-btn.selected {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+}
+
+.quick-fractions {
+    margin: 0;
+    margin-top: auto;
+    padding-top: 6px;
+}
+
+.fraction-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+}
+
+.fraction-btn {
+    padding: 8px 4px;
+    font-size: 14px;
+    font-weight: 700;
+    border: 2px solid #51cf66;
+    border-radius: 6px;
+    background: #51cf66;
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.fraction-btn:active {
+    transform: scale(0.95);
+    background: #40c057;
+    border-color: #40c057;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    border: 2px solid;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.add-measurement-btn {
+    background: #51cf66;
+    color: white;
+    border-color: #40c057;
+}
+
+.add-measurement-btn:active {
+    transform: scale(0.96);
+    background: #40c057;
+}
+
+.calculate-btn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    box-shadow: 0 3px 10px rgba(17, 153, 142, 0.3);
+}
+
+.calculate-btn:active {
+    transform: scale(0.96);
+}
+
+.clear-btn {
+    background: #dc3545;
+    color: white;
+    border-color: #c82333;
+}
+
+.clear-btn:active {
+    transform: scale(0.96);
+    background: #c82333;
+}
+
+.clear-history-btn {
+    background: #dc3545;
+    color: white;
+    border-color: #c82333;
+}
+
+.clear-history-btn:active {
+    transform: scale(0.96);
+    background: #c82333;
+}
+
+.result-display {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 45px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #aaa;
+    border: 2px solid #555;
+}
+
+.result-display.has-result {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.result-display.has-result div {
+    color: white;
+}
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+    }
+
+    .container {
+        max-width: 100%;
+        border-radius: 12px;
+    }
+
+    .calculator {
+        padding: 10px 12px;
+        padding-bottom: 20px;
+        gap: 8px;
+    }
+    
+    .quick-fractions {
+        padding-top: 8px;
+    }
+
+    .display {
+        padding: 10px;
+        min-height: 50px;
+    }
+
+    .current-input {
+        font-size: 16px;
+    }
+
+    .result {
+        font-size: 22px;
+    }
+
+    .fraction-buttons {
+        gap: 5px;
+    }
+
+    .fraction-btn {
+        padding: 7px 3px;
+        font-size: 13px;
+    }
+
+    .op-btn {
+        padding: 10px;
+        font-size: 22px;
+    }
+
+    .action-btn {
+        padding: 10px;
+        font-size: 15px;
+    }
+
+    .result-display {
+        padding: 10px;
+        font-size: 16px;
+        min-height: 45px;
+    }
+    
+    .history-select {
+        padding: 8px 10px;
+        font-size: 14px;
+        padding-right: 35px;
+    }
+}
+
+/* Prevent zoom on input focus on iOS */
+@media screen and (max-width: 768px) {
+    input[type="number"] {
+        font-size: 16px !important;
+    }
+}
+
+/* Ensure no scrolling on small screens */
+@media (max-height: 700px) {
+    .calculator {
+        gap: 6px;
+    }
+
+    .display {
+        padding: 8px;
+        min-height: 45px;
+    }
+
+    .current-input {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .result {
+        font-size: 20px;
+    }
+
+    .feet-inches-fraction-entry {
+        padding: 8px;
+        gap: 4px;
+    }
+    
+    .feet-input, .inches-input {
+        width: 40px;
+        padding: 5px 3px;
+        font-size: 16px;
+    }
+    
+    .fraction-entry {
+        min-width: 70px;
+    }
+
+    .fraction-btn {
+        padding: 6px 3px;
+        font-size: 12px;
+    }
+
+    .op-btn {
+        padding: 8px;
+        font-size: 20px;
+    }
+
+    .action-btn {
+        padding: 8px;
+        font-size: 14px;
+    }
+}

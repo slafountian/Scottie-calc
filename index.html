@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Construction Calculator for inches and fractions">
+    <meta name="theme-color" content="#2a2a2a">
+    <title>Scottie Calculator</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <h1>Scottie Calculator</h1>
+        </header>
+        <div class="calculator">
+            <div class="history-section">
+                <label class="history-label" for="historySelect">Past Calculations</label>
+                <div class="history-controls">
+                    <select id="historySelect" class="history-select">
+                        <option value="">Select from history...</option>
+                    </select>
+                    <button type="button" class="action-btn clear-history-btn" id="clearHistoryBtn" onclick="if(window.clearHistory){window.clearHistory();}">Clear History</button>
+                </div>
+            </div>
+
+            <div class="display">
+                <div class="running-total-label">Running Total</div>
+                <div class="result" id="runningTotal">0"</div>
+            </div>
+
+            <div id="measurementsContainer" class="measurements-container">
+                <!-- Measurements will be added here dynamically -->
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" class="action-btn add-measurement-btn" id="addMeasurementBtn">+ Add Measurement</button>
+                <button type="button" class="action-btn clear-btn" id="clearBtn" onclick="if(window.clearAll){window.clearAll();}">Clear All</button>
+            </div>
+
+            <div class="quick-fractions">
+                <div class="fraction-buttons">
+                    <button class="fraction-btn" data-num="1" data-den="2">1/2</button>
+                    <button class="fraction-btn" data-num="1" data-den="4">1/4</button>
+                    <button class="fraction-btn" data-num="3" data-den="4">3/4</button>
+                    <button class="fraction-btn" data-num="1" data-den="8">1/8</button>
+                    <button class="fraction-btn" data-num="3" data-den="8">3/8</button>
+                    <button class="fraction-btn" data-num="5" data-den="8">5/8</button>
+                    <button class="fraction-btn" data-num="7" data-den="8">7/8</button>
+                    <button class="fraction-btn" data-num="1" data-den="16">1/16</button>
+                </div>
+            </div>
+
+            <div class="result-display" id="resultDisplay"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
