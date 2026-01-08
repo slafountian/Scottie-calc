@@ -33,18 +33,26 @@ body {
 
 /* Desktop layout - constrain width and center */
 @media (min-width: 769px) {
-    .container {
-        max-width: 600px;
-        margin: 0 auto;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    body {
+        padding: 20px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
         height: auto;
-        min-height: 100vh;
-        max-height: none;
+    }
+    
+    .container {
+        max-width: 500px !important;
+        margin: 0 auto !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
     }
     
     .calculator {
-        max-width: 100%;
+        max-width: 100% !important;
     }
     
     .total-row {
