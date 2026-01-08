@@ -12,9 +12,12 @@
 <body>
     <div class="container">
         <header class="app-header">
-            <h1>Scottie Calculator</h1>
+            <div class="header-title-section">
+                <h1>Scottie Calculator</h1>
+                <p class="tagline">Built for Builders</p>
+            </div>
         </header>
-        <div class="calculator">
+        <div class="calculator" id="constructionCalculator">
             <div class="history-section">
                 <label class="history-label" for="historySelect">Past Calculations</label>
                 <div class="history-controls">
@@ -22,6 +25,10 @@
                         <option value="">Select from history...</option>
                     </select>
                     <button type="button" class="action-btn clear-history-btn" id="clearHistoryBtn" onclick="if(window.clearHistory){window.clearHistory();}">Clear History</button>
+                    <button type="button" class="mode-toggle-btn" id="modeToggleBtn" title="Switch to Regular Calculator">
+                        <span class="mode-icon">🔢</span>
+                        <span class="mode-text">Regular</span>
+                    </button>
                 </div>
             </div>
 
@@ -30,6 +37,11 @@
                     <div class="total-item">
                         <div class="total-label">Feet / Inches</div>
                         <div class="result" id="runningTotal">0"</div>
+                    </div>
+                    <div class="caption-section">
+                        <p class="caption-line">RIDE FAST</p>
+                        <p class="caption-line">OR</p>
+                        <p class="caption-line">DIE SLOW</p>
                     </div>
                     <div class="total-item">
                         <div class="total-label">Inches Only</div>
@@ -71,6 +83,50 @@
             </div>
 
             <div class="result-display" id="resultDisplay"></div>
+        </div>
+
+        <!-- Regular Calculator Mode -->
+        <div class="calculator regular-calc" id="regularCalculator" style="display: none;">
+            <div class="calc-header-controls">
+                <button type="button" class="mode-toggle-btn calc-mode-btn" id="regularCalcModeBtn" title="Switch to Construction Calculator">
+                    <span class="mode-icon">📏</span>
+                    <span class="mode-text">Construction</span>
+                </button>
+            </div>
+            <div class="calc-display">
+                <div class="calc-screen" id="calcScreen">0</div>
+            </div>
+            
+            <div class="calc-buttons">
+                <button class="calc-btn calc-btn-clear" data-action="clear">C</button>
+                <button class="calc-btn calc-btn-clear" data-action="clearAll">AC</button>
+                <button class="calc-btn calc-btn-operator" data-action="backspace">⌫</button>
+                <button class="calc-btn calc-btn-operator" data-action="divide">÷</button>
+                
+                <button class="calc-btn calc-btn-number" data-number="7">7</button>
+                <button class="calc-btn calc-btn-number" data-number="8">8</button>
+                <button class="calc-btn calc-btn-number" data-number="9">9</button>
+                <button class="calc-btn calc-btn-operator" data-action="multiply">×</button>
+                
+                <button class="calc-btn calc-btn-number" data-number="4">4</button>
+                <button class="calc-btn calc-btn-number" data-number="5">5</button>
+                <button class="calc-btn calc-btn-number" data-number="6">6</button>
+                <button class="calc-btn calc-btn-operator" data-action="subtract">−</button>
+                
+                <button class="calc-btn calc-btn-number" data-number="1">1</button>
+                <button class="calc-btn calc-btn-number" data-number="2">2</button>
+                <button class="calc-btn calc-btn-number" data-number="3">3</button>
+                <button class="calc-btn calc-btn-operator" data-action="add">+</button>
+                
+                <button class="calc-btn calc-btn-number calc-btn-zero" data-number="0">0</button>
+                <button class="calc-btn calc-btn-number" data-action="decimal">.</button>
+                <button class="calc-btn calc-btn-equals" data-action="equals">=</button>
+            </div>
+            
+            <div class="calc-caption-section">
+                <p class="calc-caption-line">LIVE TO RIDE</p>
+                <p class="calc-caption-line">RIDE TO LIVE</p>
+            </div>
         </div>
     </div>
 

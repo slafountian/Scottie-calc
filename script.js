@@ -943,12 +943,232 @@ function handleKeypadInput(value) {
     }
 }
 
+// Regular Calculator Logic
+let calcMode = 'construction'; // 'construction' or 'regular'
+let calcCurrentValue = '0';
+let calcPreviousValue = null;
+let calcOperation = null;
+let calcShouldResetDisplay = false;
+
+const constructionCalc = document.getElementById('constructionCalculator');
+const regularCalc = document.getElementById('regularCalculator');
+const modeToggleBtn = document.getElementById('modeToggleBtn');
+const calcScreen = document.getElementById('calcScreen');
+
+function switchCalculatorMode() {
+    if (calcMode === 'construction') {
+        // Switch to regular calculator
+        calcMode = 'regular';
+        if (constructionCalc) constructionCalc.style.display = 'none';
+        if (regularCalc) regularCalc.style.display = 'flex';
+        if (modeToggleBtn) {
+            modeToggleBtn.querySelector('.mode-icon').textContent = '📏';
+            modeToggleBtn.querySelector('.mode-text').textContent = 'Construction';
+            modeToggleBtn.title = 'Switch to Construction Calculator';
+        }
+    } else {
+        // Switch to construction calculator
+        calcMode = 'construction';
+        if (constructionCalc) constructionCalc.style.display = 'flex';
+        if (regularCalc) regularCalc.style.display = 'none';
+        if (modeToggleBtn) {
+            modeToggleBtn.querySelector('.mode-icon').textContent = '🔢';
+            modeToggleBtn.querySelector('.mode-text').textContent = 'Regular';
+            modeToggleBtn.title = 'Switch to Regular Calculator';
+        }
+    }
+}
+
+function updateCalcDisplay(value) {
+    if (calcScreen) {
+        calcScreen.textContent = value;
+    }
+}
+
+function handleCalcNumber(number) {
+    if (calcShouldResetDisplay) {
+        calcCurrentValue = '0';
+        calcShouldResetDisplay = false;
+    }
+    
+    if (calcCurrentValue === '0') {
+        calcCurrentValue = number;
+    } else {
+        calcCurrentValue += number;
+    }
+    updateCalcDisplay(calcCurrentValue);
+}
+
+function handleCalcDecimal() {
+    if (calcShouldResetDisplay) {
+        calcCurrentValue = '0';
+        calcShouldResetDisplay = false;
+    }
+    
+    if (!calcCurrentValue.includes('.')) {
+        calcCurrentValue += '.';
+        updateCalcDisplay(calcCurrentValue);
+    }
+}
+
+function handleCalcOperator(operator) {
+    const inputValue = parseFloat(calcCurrentValue);
+    
+    if (calcPreviousValue === null) {
+        calcPreviousValue = inputValue;
+    } else if (calcOperation) {
+        const result = performCalcOperation(calcPreviousValue, inputValue, calcOperation);
+        calcCurrentValue = String(result);
+        updateCalcDisplay(calcCurrentValue);
+        calcPreviousValue = result;
+    }
+    
+    calcShouldResetDisplay = true;
+    calcOperation = operator;
+    updateOperatorButtonStates(operator);
+}
+
+function updateOperatorButtonStates(activeOperator) {
+    // Remove active class from all operator buttons
+    const operatorButtons = document.querySelectorAll('.calc-btn-operator');
+    operatorButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add active class to the selected operator button
+    if (activeOperator) {
+        const operatorMap = {
+            'add': 'add',
+            'subtract': 'subtract',
+            'multiply': 'multiply',
+            'divide': 'divide'
+        };
+        
+        const button = document.querySelector(`[data-action="${operatorMap[activeOperator]}"]`);
+        if (button) {
+            button.classList.add('active');
+        }
+    }
+}
+
+function performCalcOperation(prev, current, operation) {
+    switch (operation) {
+        case 'add':
+            return prev + current;
+        case 'subtract':
+            return prev - current;
+        case 'multiply':
+            return prev * current;
+        case 'divide':
+            return prev / current;
+        default:
+            return current;
+    }
+}
+
+function handleCalcEquals() {
+    if (calcOperation && calcPreviousValue !== null) {
+        const inputValue = parseFloat(calcCurrentValue);
+        const result = performCalcOperation(calcPreviousValue, inputValue, calcOperation);
+        calcCurrentValue = String(result);
+        updateCalcDisplay(calcCurrentValue);
+        calcPreviousValue = null;
+        calcOperation = null;
+        calcShouldResetDisplay = true;
+        updateOperatorButtonStates(null); // Clear active state
+    }
+}
+
+function handleCalcClear() {
+    calcCurrentValue = '0';
+    updateCalcDisplay(calcCurrentValue);
+}
+
+function handleCalcClearAll() {
+    calcCurrentValue = '0';
+    calcPreviousValue = null;
+    calcOperation = null;
+    calcShouldResetDisplay = false;
+    updateCalcDisplay(calcCurrentValue);
+    updateOperatorButtonStates(null); // Clear active state
+}
+
+function handleCalcBackspace() {
+    if (calcCurrentValue.length > 1) {
+        calcCurrentValue = calcCurrentValue.slice(0, -1);
+    } else {
+        calcCurrentValue = '0';
+    }
+    updateCalcDisplay(calcCurrentValue);
+}
+
+function initRegularCalculator() {
+    if (!regularCalc) return;
+    
+    // Setup mode toggle buttons
+    if (modeToggleBtn) {
+        modeToggleBtn.addEventListener('click', switchCalculatorMode);
+    }
+    
+    // Setup regular calc mode button
+    const regularCalcModeBtn = document.getElementById('regularCalcModeBtn');
+    if (regularCalcModeBtn) {
+        regularCalcModeBtn.addEventListener('click', switchCalculatorMode);
+    }
+    
+    // Setup calculator buttons
+    const calcButtons = regularCalc.querySelectorAll('.calc-btn');
+    calcButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const number = button.getAttribute('data-number');
+            const action = button.getAttribute('data-action');
+            
+            if (number !== null) {
+                handleCalcNumber(number);
+            } else if (action) {
+                switch (action) {
+                    case 'add':
+                        handleCalcOperator('add');
+                        break;
+                    case 'subtract':
+                        handleCalcOperator('subtract');
+                        break;
+                    case 'multiply':
+                        handleCalcOperator('multiply');
+                        break;
+                    case 'divide':
+                        handleCalcOperator('divide');
+                        break;
+                    case 'equals':
+                        handleCalcEquals();
+                        break;
+                    case 'decimal':
+                        handleCalcDecimal();
+                        break;
+                    case 'clear':
+                        handleCalcClear();
+                        break;
+                    case 'clearAll':
+                        handleCalcClearAll();
+                        break;
+                    case 'backspace':
+                        handleCalcBackspace();
+                        break;
+                }
+            }
+        });
+    });
+}
+
 // Initialize
 addMeasurement(); // Add first measurement
 updateRunningTotalWithHistory();
 
 // Setup clear button handler and history select (fallback in case inline onclick doesn't work)
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize regular calculator
+    initRegularCalculator();
+    
     // Initialize keypad
     initKeypad();
     // Initialize history select
