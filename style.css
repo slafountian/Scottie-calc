@@ -77,6 +77,10 @@ body {
 }
 
 .app-header {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
     background: linear-gradient(135deg, #1f2933 0%, #111827 100%);
     padding: 14px 16px;
     text-align: center;
@@ -136,6 +140,7 @@ body {
     gap: 6px;
     flex-wrap: wrap;
     justify-content: center;
+    transition: opacity 0.2s ease;
 }
 
 .header-icon {
@@ -201,6 +206,18 @@ body {
     flex: 1;
     min-height: 0;
     background: #2a2a2a;
+    animation: modeFade 140ms ease-out;
+}
+
+@keyframes modeFade {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .history-section {
@@ -406,6 +423,34 @@ body {
     border-radius: 8px;
     border: 2px solid #555;
     margin-bottom: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Active measurement row highlight (only the row you're editing) */
+.measurement-item.is-active {
+    border-color: rgba(255,255,255,0.22);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.10);
+}
+
+/* Color-coded glow based on WHICH field is active */
+.measurement-item.is-active.active-feet {
+    border-color: rgba(74,144,226,0.7);
+    box-shadow: 0 0 0 2px rgba(74,144,226,0.35), 0 0 18px rgba(74,144,226,0.18);
+}
+
+.measurement-item.is-active.active-inches {
+    border-color: rgba(81,207,102,0.75);
+    box-shadow: 0 0 0 2px rgba(81,207,102,0.35), 0 0 18px rgba(81,207,102,0.18);
+}
+
+.measurement-item.is-active.active-fraction {
+    border-color: rgba(255,255,255,0.28);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.12);
+}
+
+/* If an input inside a row is focused, lightly indicate it */
+.measurement-item:focus-within {
+    border-color: rgba(255,255,255,0.22);
 }
 
 .measurement-op-btn {

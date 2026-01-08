@@ -856,6 +856,23 @@ function initKeypad() {
     });
 }
 
+function setActiveMeasurementRow(inputEl, type) {
+    // type: "feet" | "inches" | "fraction"
+    const row = inputEl?.closest?.('.measurement-item');
+    if (!row) return;
+    
+    // Clear previous active row + type
+    document.querySelectorAll('.measurement-item.is-active').forEach(el => {
+        el.classList.remove('is-active', 'active-feet', 'active-inches', 'active-fraction');
+    });
+    
+    row.classList.add('is-active');
+    
+    if (type === 'feet') row.classList.add('active-feet');
+    if (type === 'inches') row.classList.add('active-inches');
+    if (type === 'fraction') row.classList.add('active-fraction');
+}
+
 function showKeypad(input, measurement) {
     if (!keypadContainer) return;
     
@@ -864,20 +881,27 @@ function showKeypad(input, measurement) {
     // Determine keypad type based on input
     let label = 'Tap a field to enter';
     let keypadType = '';
+    let activeType = '';
     
     if (input === measurement.feetInput) {
         label = 'Feet';
         keypadType = 'feet-active';
+        activeType = 'feet';
     } else if (input === measurement.inchesInput) {
         label = 'Inches';
         keypadType = 'inches-active';
+        activeType = 'inches';
     } else if (input === measurement.numInput || input === measurement.denInput) {
         label = 'Fraction';
         keypadType = 'fraction-active';
+        activeType = 'fraction';
     }
     
     keypadLabel.textContent = label;
     keypadContainer.className = `keypad-container-static ${keypadType}`;
+    
+    // Highlight the active measurement row
+    setActiveMeasurementRow(input, activeType);
 }
 
 function hideKeypad() {
@@ -1163,6 +1187,74 @@ function initRegularCalculator() {
 // Initialize
 addMeasurement(); // Add first measurement
 updateRunningTotalWithHistory();
+
+// Long-press header easter egg: show random builder motto
+(function initHeaderLongPress() {
+    const header = document.querySelector('.app-header');
+    if (!header) return;
+    
+    const mottos = [
+        'MEASURE TWICE',
+        'CUT ONCE',
+        'SEND IT',
+        'GOOD ENOUGH AIN\'T',
+        'CLOSE ENOUGH ISN\'T',
+        'BUILT NOT BOUGHT'
+    ];
+    
+    let pressTimer = null;
+    const titleEl = document.querySelector('.app-header h1');
+    if (!titleEl) return;
+    
+    const originalTitle = titleEl.innerHTML;
+    
+    header.addEventListener('touchstart', startPress, { passive: false });
+    header.addEventListener('mousedown', startPress);
+    
+    header.addEventListener('touchend', cancelPress);
+    header.addEventListener('mouseup', cancelPress);
+    header.addEventListener('mouseleave', cancelPress);
+    header.addEventListener('touchcancel', cancelPress);
+    
+    function startPress(e) {
+        // Prevent default to avoid text selection and context menu
+        e.preventDefault();
+        e.stopPropagation();
+        pressTimer = setTimeout(() => {
+            const motto = mottos[Math.floor(Math.random() * mottos.length)];
+            titleEl.textContent = motto;
+            
+            setTimeout(() => {
+                titleEl.innerHTML = originalTitle;
+            }, 3500); // 3.5 seconds - longer display time
+        }, 700); // 0.7 second long press - quicker trigger
+    }
+    
+    function cancelPress() {
+        if (pressTimer) {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+        }
+    }
+})();
+
+// Highlight the active row based on which input is tapped/focused
+document.addEventListener('focusin', (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLElement)) return;
+    
+    if (t.classList.contains('feet-input')) {
+        setActiveMeasurementRow(t, 'feet');
+    } else if (t.classList.contains('inches-input')) {
+        setActiveMeasurementRow(t, 'inches');
+    } else {
+        // Fraction inputs: check if inside fraction-entry
+        const isFraction = t.closest('.fraction-entry') && (t.tagName === 'INPUT');
+        if (isFraction) {
+            setActiveMeasurementRow(t, 'fraction');
+        }
+    }
+});
 
 // Setup clear button handler and history select (fallback in case inline onclick doesn't work)
 document.addEventListener('DOMContentLoaded', function() {
